@@ -3,7 +3,7 @@
 I tested with correct inputs and tricky/wrong inputs. Open `index.html` and try:
 
 | # | Test | Expected result | Status |
-|---|------|-----------------|--------|
+| --- | ---- | --------------- | ------ |
 | 1 | Add event with empty name | Error: "Event name is required." | ✅ |
 | 2 | Add event with capacity 0 or -5 | Error: capacity must be ≥ 1 | ✅ |
 | 3 | Add a valid event, refresh page | Event still there (localStorage) | ✅ |
@@ -21,11 +21,13 @@ I tested with correct inputs and tricky/wrong inputs. Open `index.html` and try:
 | 15 | Report with a Completed event | Shows status counts + best event | ✅ |
 
 ## Bug I found and fixed
+
 Names containing `<`, `>` or `&` broke the tables because values were inserted
 with `innerHTML`. Fixed by adding `escapeHtml()` and applying it to all
 user-entered fields. (See the "Fix:" commit.)
 
 ## Bug caught while refactoring
+
 A global find-replace turned the `$` helper's own definition into
 `const $ = (id) => $(id);` (infinite recursion). I spotted it, restored
 `document.getElementById`, and re-tested.

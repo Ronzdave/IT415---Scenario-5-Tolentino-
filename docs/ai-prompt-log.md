@@ -136,6 +136,7 @@ Purpose: code generation (branch feature)
 4. **What I changed:** Confirmed attendance rate rounds to a whole percent.
 
 ## What I learned
+
 - How `localStorage` keeps browser-only data across refreshes via JSON.
 - Why user input must be escaped before going into `innerHTML`.
 - The Git branch → push → pull request → merge workflow on GitHub.

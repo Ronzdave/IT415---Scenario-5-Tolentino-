@@ -9,6 +9,7 @@ separate paper sheets.
 **Scenario:** 5 – Student Organization Event and Attendance Manager
 
 ## What it does
+
 - Add, edit, and delete events (status flow: Draft → Open for Registration → Closed → Completed)
 - Register students for an event up to its capacity (no duplicate student IDs)
 - Cancel a registration to free a slot
@@ -18,20 +19,26 @@ separate paper sheets.
 - A report: event counts per status + the Completed event with the highest attendance rate
 
 ## Tech
+
 Plain HTML, CSS, and JavaScript. All data is saved in the browser with
 `localStorage`, so nothing is lost on refresh. No server or database needed.
 
 ## How to run
+
 1. Download or clone this repository.
 2. Open `index.html` in any modern web browser (double-click it).
 
 That's it — there is no build step.
 
 ## Folder layout
-```
+
+```text
+
 event-attendance-manager/
   index.html
   css/style.css
   js/            app logic
   docs/          requirements, AI prompt log, screenshots
+
 ```
+

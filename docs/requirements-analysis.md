@@ -4,7 +4,7 @@
 Author: Ronian Dave P. Tolentino
 
 | # | Item | Answer |
-|---|------|--------|
+| --- | ---- | ------ |
 | 1 | **Problem** | A student organization runs many events each semester. Sign-ups are on paper and attendance is on a separate sheet, so officers cannot tell how many people who signed up actually came. |
 | 2 | **Target users** | Student organization officers. |
 | 3 | **Functional requirements** | Add/edit/delete events with a status flow; register students up to capacity; block duplicate student IDs; cancel registrations; check students in as Present; stop deletion of events that have registrations; show per-event counts and attendance rate; search/filter registrations and list events by status; produce a status report. |
@@ -14,6 +14,7 @@ Author: Ronian Dave P. Tolentino
 | 7 | **Tools and technologies** | HTML, CSS, JavaScript, `localStorage`. Git + GitHub for version control. AI tool: Claude Code (also ChatGPT for cross-checking). |
 
 ## Business rules captured
+
 - Registration is allowed **only** when an event's status is *Open for Registration*.
 - Capacity is a hard limit — when full, show a message and do not register.
 - A student ID may appear **once** per event.
