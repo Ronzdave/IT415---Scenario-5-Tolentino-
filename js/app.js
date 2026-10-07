@@ -13,6 +13,9 @@ let selectedEventId = null; // which event's registrations we are viewing
 const STATUS_ORDER = ["Draft", "Open for Registration", "Closed", "Completed"];
 
 // ---------- Small helpers ----------
+// Short alias used throughout instead of writing document.getElementById.
+const $ = (id) => document.getElementById(id);
+
 function uid() {
   // Good-enough unique id for a browser-only app.
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -27,7 +30,7 @@ function escapeHtml(value) {
 }
 
 function showMessage(text, type = "success") {
-  const box = document.getElementById("message");
+  const box = $("message");
   box.textContent = text;
   box.className = "message " + type;
   // Auto-hide after 3 seconds.
@@ -75,13 +78,13 @@ function validateRegistration(name, studentId) {
 // ---------- Event CRUD ----------
 function saveEvent(e) {
   e.preventDefault();
-  const id = document.getElementById("event-id").value;
+  const id = $("event-id").value;
   const data = {
-    name: document.getElementById("event-name").value.trim(),
-    date: document.getElementById("event-date").value,
-    venue: document.getElementById("event-venue").value.trim(),
-    capacity: Number(document.getElementById("event-capacity").value),
-    status: document.getElementById("event-status").value,
+    name: $("event-name").value.trim(),
+    date: $("event-date").value,
+    venue: $("event-venue").value.trim(),
+    capacity: Number($("event-capacity").value),
+    status: $("event-status").value,
   };
 
   const error = validateEvent(data);
@@ -112,13 +115,13 @@ function saveEvent(e) {
 function editEvent(id) {
   const ev = events.find(ev => ev.id === id);
   if (!ev) return;
-  document.getElementById("event-id").value = ev.id;
-  document.getElementById("event-name").value = ev.name;
-  document.getElementById("event-date").value = ev.date;
-  document.getElementById("event-venue").value = ev.venue;
-  document.getElementById("event-capacity").value = ev.capacity;
-  document.getElementById("event-status").value = ev.status;
-  document.getElementById("event-submit").textContent = "Save changes";
+  $("event-id").value = ev.id;
+  $("event-name").value = ev.name;
+  $("event-date").value = ev.date;
+  $("event-venue").value = ev.venue;
+  $("event-capacity").value = ev.capacity;
+  $("event-status").value = ev.status;
+  $("event-submit").textContent = "Save changes";
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
@@ -137,9 +140,9 @@ function deleteEvent(id) {
 }
 
 function resetEventForm() {
-  document.getElementById("event-form").reset();
-  document.getElementById("event-id").value = "";
-  document.getElementById("event-submit").textContent = "Add event";
+  $("event-form").reset();
+  $("event-id").value = "";
+  $("event-submit").textContent = "Add event";
 }
 
 function selectEvent(id) {
@@ -162,9 +165,9 @@ function registerStudent(e) {
     return;
   }
 
-  const studentName = document.getElementById("student-name").value.trim();
-  const studentId = document.getElementById("student-id").value.trim();
-  const yearLevel = document.getElementById("year-level").value;
+  const studentName = $("student-name").value.trim();
+  const studentId = $("student-id").value.trim();
+  const yearLevel = $("year-level").value;
 
   const error = validateRegistration(studentName, studentId);
   if (error) { showMessage(error, "error"); return; }
@@ -194,7 +197,7 @@ function registerStudent(e) {
     present: false,
   });
   Storage.saveRegistrations(registrations);
-  document.getElementById("registration-form").reset();
+  $("registration-form").reset();
   showMessage(`${studentName} registered.`);
   render();
 }
@@ -210,7 +213,7 @@ function cancelRegistration(id) {
 
 // ---------- Report ----------
 function renderReport() {
-  const box = document.getElementById("report");
+  const box = $("report");
   if (events.length === 0) {
     box.innerHTML = `<p class="muted">No events yet, so there is nothing to report.</p>`;
     return;
@@ -237,8 +240,8 @@ function render() {
 }
 
 function renderEvents() {
-  const body = document.getElementById("events-body");
-  const filter = document.getElementById("status-filter").value;
+  const body = $("events-body");
+  const filter = $("status-filter").value;
   const list = events.filter(ev => filter === "All" || ev.status === filter);
   body.innerHTML = "";
 
@@ -270,8 +273,8 @@ function renderEvents() {
 }
 
 function renderRegistrations() {
-  const label = document.getElementById("selected-event-name");
-  const body = document.getElementById("registrations-body");
+  const label = $("selected-event-name");
+  const body = $("registrations-body");
   body.innerHTML = "";
 
   const ev = events.find(ev => ev.id === selectedEventId);
@@ -283,8 +286,8 @@ function renderRegistrations() {
   label.textContent = `— ${ev.name}`;
 
   // Feature 8: search by name/ID and filter by attendance.
-  const term = document.getElementById("reg-search").value.trim().toLowerCase();
-  const attFilter = document.getElementById("reg-attendance-filter").value;
+  const term = $("reg-search").value.trim().toLowerCase();
+  const attFilter = $("reg-attendance-filter").value;
 
   let list = registrations.filter(r => r.eventId === ev.id);
   if (term) {
@@ -318,21 +321,21 @@ function renderRegistrations() {
 
 // ---------- Wiring ----------
 function init() {
-  document.getElementById("event-form").addEventListener("submit", saveEvent);
-  document.getElementById("event-reset").addEventListener("click", resetEventForm);
-  document.getElementById("status-filter").addEventListener("change", render);
-  document.getElementById("registration-form").addEventListener("submit", registerStudent);
-  document.getElementById("reg-search").addEventListener("input", render);
-  document.getElementById("reg-attendance-filter").addEventListener("change", render);
+  $("event-form").addEventListener("submit", saveEvent);
+  $("event-reset").addEventListener("click", resetEventForm);
+  $("status-filter").addEventListener("change", render);
+  $("registration-form").addEventListener("submit", registerStudent);
+  $("reg-search").addEventListener("input", render);
+  $("reg-attendance-filter").addEventListener("change", render);
 
-  document.getElementById("registrations-body").addEventListener("click", (e) => {
+  $("registrations-body").addEventListener("click", (e) => {
     const btn = e.target.closest("button");
     if (!btn) return;
     if (btn.dataset.act === "cancel") cancelRegistration(btn.dataset.id);
   });
 
   // One click handler for all event-table buttons (event delegation).
-  document.getElementById("events-body").addEventListener("click", (e) => {
+  $("events-body").addEventListener("click", (e) => {
     const btn = e.target.closest("button");
     if (!btn) return;
     const id = btn.dataset.id;
