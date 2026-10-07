@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Event &amp; Attendance Manager</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header>
+    <h1>Student Organization Event &amp; Attendance Manager</h1>
+    <p class="subtitle">Scenario 5 — manage events, registrations, and attendance in one place.</p>
+  </header>
+
+  <!-- Floating message area for success / error feedback -->
+  <div id="message" class="message hidden" role="status"></div>
+
+  <main>
+    <!-- ============ EVENTS ============ -->
+    <section class="card">
+      <h2>Events</h2>
+
+      <form id="event-form" class="form-grid" autocomplete="off">
+        <input type="hidden" id="event-id" />
+
+        <label>Name
+          <input type="text" id="event-name" placeholder="e.g. Leadership Seminar" />
+        </label>
+
+        <label>Date
+          <input type="date" id="event-date" />
+        </label>
+
+        <label>Venue
+          <input type="text" id="event-venue" placeholder="e.g. AVR Hall" />
+        </label>
+
+        <label>Capacity
+          <input type="number" id="event-capacity" min="1" placeholder="e.g. 50" />
+        </label>
+
+        <label>Status
+          <select id="event-status">
+            <option value="Draft">Draft</option>
+            <option value="Open for Registration">Open for Registration</option>
+            <option value="Closed">Closed</option>
+            <option value="Completed">Completed</option>
+          </select>
+        </label>
+
+        <div class="form-actions">
+          <button type="submit" id="event-submit">Add event</button>
+          <button type="button" id="event-reset" class="secondary">Clear</button>
+        </div>
+      </form>
+
+      <div class="toolbar">
+        <label>Show status:
+          <select id="status-filter">
+            <option value="All">All</option>
+            <option value="Draft">Draft</option>
+            <option value="Open for Registration">Open for Registration</option>
+            <option value="Closed">Closed</option>
+            <option value="Completed">Completed</option>
+          </select>
+        </label>
+      </div>
+
+      <table id="events-table">
+        <thead>
+          <tr>
+            <th>Name</th><th>Date</th><th>Venue</th><th>Status</th>
+            <th>Registered</th><th>Slots left</th><th>Present</th><th>Attendance</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="events-body">
+          <!-- rows rendered by JavaScript -->
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ============ REGISTRATIONS ============ -->
+    <section class="card">
+      <h2>Registrations <span id="selected-event-name" class="muted"></span></h2>
+
+      <form id="registration-form" class="form-grid" autocomplete="off">
+        <label>Student name
+          <input type="text" id="student-name" placeholder="e.g. Juan Dela Cruz" />
+        </label>
+
+        <label>Student ID
+          <input type="text" id="student-id" placeholder="e.g. 2023-00123" />
+        </label>
+
+        <label>Year level
+          <select id="year-level">
+            <option value="">—</option>
+            <option>1st Year</option>
+            <option>2nd Year</option>
+            <option>3rd Year</option>
+            <option>4th Year</option>
+          </select>
+        </label>
+
+        <div class="form-actions">
+          <button type="submit">Register student</button>
+        </div>
+      </form>
+
+      <div class="toolbar">
+        <input type="search" id="reg-search" placeholder="Search by name or student ID" />
+        <label>Attendance:
+          <select id="reg-attendance-filter">
+            <option value="All">All</option>
+            <option value="Present">Present</option>
+            <option value="Absent">Not yet present</option>
+          </select>
+        </label>
+      </div>
+
+      <table id="registrations-table">
+        <thead>
+          <tr>
+            <th>Student name</th><th>Student ID</th><th>Year</th>
+            <th>Date registered</th><th>Attendance</th><th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="registrations-body">
+          <!-- rows rendered by JavaScript -->
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ============ REPORT ============ -->
+    <section class="card">
+      <h2>Report</h2>
+      <div id="report"><!-- filled by JavaScript --></div>
+    </section>
+  </main>
+
+  <footer>
+    <p>IT 415 Midterm — Ronian Dave P. Tolentino</p>
+  </footer>
+</body>
+</html>
