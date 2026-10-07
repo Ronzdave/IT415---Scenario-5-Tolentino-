@@ -45,6 +45,25 @@ function slotsLeft(ev) {
   return ev.capacity - registeredCount(ev.id);
 }
 
+// ---------- Validation ----------
+// Returns an error string, or "" when the data is valid.
+function validateEvent(data) {
+  if (!data.name) return "Event name is required.";
+  if (!data.date) return "Please choose an event date.";
+  if (!data.venue) return "Venue is required.";
+  if (!Number.isFinite(data.capacity) || data.capacity < 1) {
+    return "Capacity must be a whole number of at least 1.";
+  }
+  if (!STATUS_ORDER.includes(data.status)) return "Please choose a valid status.";
+  return "";
+}
+
+function validateRegistration(name, studentId) {
+  if (!name) return "Student name is required.";
+  if (!studentId) return "Student ID is required.";
+  return "";
+}
+
 // ---------- Event CRUD ----------
 function saveEvent(e) {
   e.preventDefault();
@@ -56,6 +75,15 @@ function saveEvent(e) {
     capacity: Number(document.getElementById("event-capacity").value),
     status: document.getElementById("event-status").value,
   };
+
+  const error = validateEvent(data);
+  if (error) { showMessage(error, "error"); return; }
+
+  // When editing, capacity cannot drop below the number already registered.
+  if (id && data.capacity < registeredCount(id)) {
+    showMessage(`Capacity cannot be less than the ${registeredCount(id)} students already registered.`, "error");
+    return;
+  }
 
   if (id) {
     // Edit existing event.
@@ -129,6 +157,9 @@ function registerStudent(e) {
   const studentName = document.getElementById("student-name").value.trim();
   const studentId = document.getElementById("student-id").value.trim();
   const yearLevel = document.getElementById("year-level").value;
+
+  const error = validateRegistration(studentName, studentId);
+  if (error) { showMessage(error, "error"); return; }
 
   // Rule 2: do not go over capacity.
   if (slotsLeft(ev) <= 0) {
