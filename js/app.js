@@ -18,6 +18,14 @@ function uid() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 }
 
+// Escape text before putting it into innerHTML, so a name or venue that
+// contains <, >, & or quotes is shown as-is instead of breaking the table.
+function escapeHtml(value) {
+  return String(value ?? "").replace(/[&<>"']/g, ch => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+  }[ch]));
+}
+
 function showMessage(text, type = "success") {
   const box = document.getElementById("message");
   box.textContent = text;
@@ -244,9 +252,9 @@ function renderEvents() {
     const tr = document.createElement("tr");
     if (ev.id === selectedEventId) tr.classList.add("selected-row");
     tr.innerHTML = `
-      <td>${ev.name}</td>
+      <td>${escapeHtml(ev.name)}</td>
       <td>${ev.date || "—"}</td>
-      <td>${ev.venue || "—"}</td>
+      <td>${escapeHtml(ev.venue) || "—"}</td>
       <td><span class="pill ${statusPillClass(ev.status)}">${ev.status}</span></td>
       <td>${reg}</td>
       <td>${slotsLeft(ev)}</td>
@@ -296,8 +304,8 @@ function renderRegistrations() {
   list.forEach(r => {
     const tr = document.createElement("tr");
     tr.innerHTML = `
-      <td>${r.studentName}</td>
-      <td>${r.studentId}</td>
+      <td>${escapeHtml(r.studentName)}</td>
+      <td>${escapeHtml(r.studentId)}</td>
       <td>${r.yearLevel || "—"}</td>
       <td>${r.dateRegistered}</td>
       <td>${r.present ? "Present" : "—"}</td>
