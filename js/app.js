@@ -1,5 +1,5 @@
 /* Event & Attendance Manager — screen logic.
-   Data lives in localStorage (see data.js). */
+   Covers all 9 required features. Data lives in localStorage (see data.js). */
 
 const $ = (id) => document.getElementById(id);
 
@@ -7,6 +7,7 @@ const $ = (id) => document.getElementById(id);
 let data = loadData();          // { events, registrations }
 let currentEventId = null;      // which event the Registrations view is showing
 let regSearch = "";
+let regAttFilter = "All";
 let statusListFilter = "All";
 
 // ---------- Helpers ----------
@@ -22,11 +23,14 @@ function regsFor(eventId) {
   return data.registrations.filter(r => r.eventId === eventId);
 }
 
-// Derived counts for an event.
+// Feature 7: derived counts for an event.
 function statsFor(ev) {
-  const registered = regsFor(ev.id).length;
+  const regs = regsFor(ev.id);
+  const registered = regs.length;
+  const present = regs.filter(r => r.present).length;
   const slotsLeft = Math.max(0, ev.capacity - registered);
-  return { registered, slotsLeft };
+  const rate = registered === 0 ? 0 : Math.round((present / registered) * 100);
+  return { registered, present, slotsLeft, rate };
 }
 
 function statusClass(s) {
@@ -128,6 +132,8 @@ function renderEvents() {
       <div class="event-counts">
         <span><strong>${s.registered}</strong> registered</span>
         <span><strong>${s.slotsLeft}</strong> slots left</span>
+        <span><strong>${s.present}</strong> present</span>
+        <span><strong>${s.rate}%</strong> attendance</span>
         <span class="cap">cap ${ev.capacity}</span>
       </div>
       <div class="event-actions">
@@ -145,8 +151,8 @@ function renderEvents() {
 
 function openEvent(id) {
   currentEventId = id;
-  regSearch = "";
-  $("reg-search").value = "";
+  regSearch = ""; regAttFilter = "All";
+  $("reg-search").value = ""; $("reg-att-filter").value = "All";
   showView("registrations");
   renderRegistrations();
 }
@@ -188,6 +194,16 @@ function cancelReg(id) {
   renderRegistrations();
 }
 
+// Feature 5: toggle Present (check-in / undo). Only registered students appear here,
+// so a non-registered student can never be checked in.
+function togglePresent(id) {
+  const r = data.registrations.find(x => x.id === id);
+  if (!r) return;
+  r.present = !r.present;
+  commit();
+  renderRegistrations();
+}
+
 function renderRegistrations() {
   const ev = data.events.find(x => x.id === currentEventId);
   if (!ev) return;
@@ -198,13 +214,17 @@ function renderRegistrations() {
 
   $("reg-stats").innerHTML = `
     ${statCard(s.registered, "Registered")}
-    ${statCard(s.slotsLeft, "Slots left")}`;
+    ${statCard(s.slotsLeft, "Slots left")}
+    ${statCard(s.present, "Present")}
+    ${statCard(s.rate + "%", "Attendance rate")}`;
 
-  // Feature 8: search registrations by name or student ID.
+  // Feature 8: search + filter registrations.
   const term = regSearch.toLowerCase();
   let list = regsFor(ev.id);
   if (term) list = list.filter(r =>
     r.studentName.toLowerCase().includes(term) || r.studentId.toLowerCase().includes(term));
+  if (regAttFilter === "Present") list = list.filter(r => r.present);
+  if (regAttFilter === "Absent") list = list.filter(r => !r.present);
 
   const body = $("reg-body");
   body.innerHTML = "";
@@ -217,7 +237,9 @@ function renderRegistrations() {
       <td><span class="emp-id">${escapeHtml(r.studentId)}</span></td>
       <td>${escapeHtml(r.year)}</td>
       <td>${escapeHtml(r.dateRegistered)}</td>
+      <td><span class="badge ${r.present ? "badge-present" : "badge-absent"}">${r.present ? "Present" : "Not present"}</span></td>
       <td class="row-actions">
+        <button class="btn btn-ghost btn-sm" data-act="present" data-id="${r.id}">${r.present ? "Undo" : "Check in"}</button>
         <button class="btn btn-danger btn-sm" data-act="cancel" data-id="${r.id}">Cancel</button>
       </td>`;
     body.appendChild(tr);
@@ -229,14 +251,38 @@ function statCard(num, label) {
 }
 
 // =====================================================================
-//  REPORT VIEW (Feature 9 — events per status)
+//  REPORT VIEW (Feature 9)
 // =====================================================================
 
 function renderReport() {
+  // Count events per status.
   const counts = {};
   STATUS_ORDER.forEach(s => counts[s] = 0);
   data.events.forEach(ev => counts[ev.status] = (counts[ev.status] || 0) + 1);
   $("report-status").innerHTML = STATUS_ORDER.map(s => statCard(counts[s], s)).join("");
+
+  // Completed event with the highest attendance rate.
+  const completed = data.events.filter(ev => ev.status === "Completed");
+  const box = $("report-best");
+  if (completed.length === 0) {
+    box.innerHTML = `<p class="muted">No completed events yet.</p>`;
+    return;
+  }
+  let best = null, bestRate = -1;
+  completed.forEach(ev => {
+    const rate = statsFor(ev).rate;
+    if (rate > bestRate) { bestRate = rate; best = ev; }
+  });
+  const s = statsFor(best);
+  box.innerHTML = `
+    <div class="event-card">
+      <h3 class="event-name">${escapeHtml(best.name)}</h3>
+      <p class="event-meta">${escapeHtml(best.date)} · ${escapeHtml(best.venue)}</p>
+      <div class="event-counts">
+        <span><strong>${s.present}</strong>/${s.registered} present</span>
+        <span><strong>${s.rate}%</strong> attendance rate</span>
+      </div>
+    </div>`;
 }
 
 // =====================================================================
@@ -279,14 +325,16 @@ function init() {
     if (btn.dataset.act === "del") deleteEvent(id);
   });
 
-  // Registration form + search
+  // Registration form + filters
   $("reg-form").addEventListener("submit", handleRegSubmit);
   $("reg-search").addEventListener("input", e => { regSearch = e.target.value.trim(); renderRegistrations(); });
+  $("reg-att-filter").addEventListener("change", e => { regAttFilter = e.target.value; renderRegistrations(); });
 
   // Registration table actions (delegation)
   $("reg-body").addEventListener("click", e => {
     const btn = e.target.closest("button[data-act]");
     if (!btn) return;
+    if (btn.dataset.act === "present") togglePresent(btn.dataset.id);
     if (btn.dataset.act === "cancel") cancelReg(btn.dataset.id);
   });
 
