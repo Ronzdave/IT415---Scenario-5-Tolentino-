@@ -111,9 +111,68 @@ function selectEvent(id) {
   render();
 }
 
+// ---------- Registration ----------
+function registerStudent(e) {
+  e.preventDefault();
+  if (!selectedEventId) {
+    showMessage("Pick an event first (click View on an event).", "error");
+    return;
+  }
+  const ev = events.find(ev => ev.id === selectedEventId);
+
+  // Rule 1: registration only when the event is Open for Registration.
+  if (ev.status !== "Open for Registration") {
+    showMessage(`"${ev.name}" is ${ev.status}. You can only register when it is Open for Registration.`, "error");
+    return;
+  }
+
+  const studentName = document.getElementById("student-name").value.trim();
+  const studentId = document.getElementById("student-id").value.trim();
+  const yearLevel = document.getElementById("year-level").value;
+
+  // Rule 2: do not go over capacity.
+  if (slotsLeft(ev) <= 0) {
+    showMessage(`"${ev.name}" is full (capacity ${ev.capacity}). Cannot register.`, "error");
+    return;
+  }
+
+  // Rule 3: the same student ID cannot register twice for the same event.
+  const duplicate = registrations.some(
+    r => r.eventId === ev.id && r.studentId.toLowerCase() === studentId.toLowerCase()
+  );
+  if (duplicate) {
+    showMessage(`Student ID ${studentId} is already registered for this event.`, "error");
+    return;
+  }
+
+  registrations.push({
+    id: uid(),
+    eventId: ev.id,
+    studentName,
+    studentId,
+    yearLevel,
+    dateRegistered: new Date().toISOString().slice(0, 10),
+    present: false,
+  });
+  Storage.saveRegistrations(registrations);
+  document.getElementById("registration-form").reset();
+  showMessage(`${studentName} registered.`);
+  render();
+}
+
+// Rule 4: cancelling a registration frees a slot.
+function cancelRegistration(id) {
+  if (!confirm("Cancel this registration? This frees a slot.")) return;
+  registrations = registrations.filter(r => r.id !== id);
+  Storage.saveRegistrations(registrations);
+  showMessage("Registration cancelled.");
+  render();
+}
+
 // ---------- Rendering ----------
 function render() {
   renderEvents();
+  renderRegistrations();
 }
 
 function renderEvents() {
@@ -149,11 +208,52 @@ function renderEvents() {
   });
 }
 
+function renderRegistrations() {
+  const label = document.getElementById("selected-event-name");
+  const body = document.getElementById("registrations-body");
+  body.innerHTML = "";
+
+  const ev = events.find(ev => ev.id === selectedEventId);
+  if (!ev) {
+    label.textContent = "— click View on an event to see its registrations";
+    body.innerHTML = `<tr class="empty-row"><td colspan="6">No event selected.</td></tr>`;
+    return;
+  }
+  label.textContent = `— ${ev.name}`;
+
+  const list = registrations.filter(r => r.eventId === ev.id);
+  if (list.length === 0) {
+    body.innerHTML = `<tr class="empty-row"><td colspan="6">No registrations yet for this event.</td></tr>`;
+    return;
+  }
+
+  list.forEach(r => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${r.studentName}</td>
+      <td>${r.studentId}</td>
+      <td>${r.yearLevel || "—"}</td>
+      <td>${r.dateRegistered}</td>
+      <td>${r.present ? "Present" : "—"}</td>
+      <td>
+        <button class="small danger" data-act="cancel" data-id="${r.id}">Cancel</button>
+      </td>`;
+    body.appendChild(tr);
+  });
+}
+
 // ---------- Wiring ----------
 function init() {
   document.getElementById("event-form").addEventListener("submit", saveEvent);
   document.getElementById("event-reset").addEventListener("click", resetEventForm);
   document.getElementById("status-filter").addEventListener("change", render);
+  document.getElementById("registration-form").addEventListener("submit", registerStudent);
+
+  document.getElementById("registrations-body").addEventListener("click", (e) => {
+    const btn = e.target.closest("button");
+    if (!btn) return;
+    if (btn.dataset.act === "cancel") cancelRegistration(btn.dataset.id);
+  });
 
   // One click handler for all event-table buttons (event delegation).
   document.getElementById("events-body").addEventListener("click", (e) => {
