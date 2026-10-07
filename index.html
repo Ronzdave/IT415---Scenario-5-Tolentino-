@@ -7,56 +7,59 @@
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
-  <header>
-    <h1>Student Organization Event &amp; Attendance Manager</h1>
-    <p class="subtitle">Scenario 5 — manage events, registrations, and attendance in one place.</p>
+<div class="app">
+
+  <!-- ============ HEADER ============ -->
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">EA</span>
+      <div>
+        <h1 class="page-title">Event &amp; Attendance Manager</h1>
+        <p class="page-sub">Student Organization — Ronian Dave P. Tolentino</p>
+      </div>
+    </div>
+    <nav class="tabs" aria-label="Views">
+      <button class="tab active" data-view="events" type="button">Events</button>
+      <button class="tab" data-view="report" type="button">Report</button>
+    </nav>
   </header>
 
-  <!-- Floating message area for success / error feedback -->
-  <div id="message" class="message hidden" role="status"></div>
+  <main class="content">
 
-  <main>
-    <!-- ============ EVENTS ============ -->
-    <section class="card">
-      <h2>Events</h2>
+    <!-- ============ EVENTS VIEW ============ -->
+    <section id="view-events" class="view">
 
-      <form id="event-form" class="form-grid" autocomplete="off">
-        <input type="hidden" id="event-id" />
-
-        <label>Name
-          <input type="text" id="event-name" placeholder="e.g. Leadership Seminar" />
-        </label>
-
-        <label>Date
-          <input type="date" id="event-date" />
-        </label>
-
-        <label>Venue
-          <input type="text" id="event-venue" placeholder="e.g. AVR Hall" />
-        </label>
-
-        <label>Capacity
-          <input type="number" id="event-capacity" min="1" placeholder="e.g. 50" />
-        </label>
-
-        <label>Status
-          <select id="event-status">
-            <option value="Draft">Draft</option>
-            <option value="Open for Registration">Open for Registration</option>
-            <option value="Closed">Closed</option>
-            <option value="Completed">Completed</option>
-          </select>
-        </label>
-
-        <div class="form-actions">
-          <button type="submit" id="event-submit">Add event</button>
-          <button type="button" id="event-reset" class="secondary">Clear</button>
+      <!-- Event form -->
+      <div class="panel">
+        <div class="panel-head">
+          <h2 class="panel-title" id="event-form-title">Add Event</h2>
         </div>
-      </form>
+        <form id="event-form" class="form-grid" autocomplete="off">
+          <input type="hidden" id="event-id" />
+          <label>Name <input type="text" id="e-name" placeholder="e.g. Tech Summit" /></label>
+          <label>Date <input type="date" id="e-date" /></label>
+          <label>Venue <input type="text" id="e-venue" placeholder="e.g. Main Hall" /></label>
+          <label>Capacity <input type="number" id="e-capacity" min="1" placeholder="e.g. 50" /></label>
+          <label>Status
+            <select id="e-status">
+              <option value="Draft">Draft</option>
+              <option value="Open for Registration">Open for Registration</option>
+              <option value="Closed">Closed</option>
+              <option value="Completed">Completed</option>
+            </select>
+          </label>
+          <div class="form-actions">
+            <button class="btn btn-primary" type="submit" id="event-submit">Add Event</button>
+            <button class="btn btn-ghost hidden" type="button" id="event-cancel">Cancel</button>
+          </div>
+        </form>
+        <p class="form-msg" id="event-msg" role="status"></p>
+      </div>
 
+      <!-- Status filter -->
       <div class="toolbar">
-        <label>Show status:
-          <select id="status-filter">
+        <label class="inline">List events by status:
+          <select id="status-list-filter">
             <option value="All">All</option>
             <option value="Draft">Draft</option>
             <option value="Open for Registration">Open for Registration</option>
@@ -66,84 +69,80 @@
         </label>
       </div>
 
-      <table id="events-table">
-        <thead>
-          <tr>
-            <th>Name</th><th>Date</th><th>Venue</th><th>Status</th>
-            <th>Registered</th><th>Slots left</th><th>Present</th><th>Attendance</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody id="events-body">
-          <!-- rows rendered by JavaScript -->
-        </tbody>
-      </table>
+      <!-- Event list -->
+      <div id="event-list" class="event-list"></div>
     </section>
 
-    <!-- ============ REGISTRATIONS ============ -->
-    <section class="card">
-      <h2>Registrations <span id="selected-event-name" class="muted"></span></h2>
+    <!-- ============ REGISTRATIONS VIEW ============ -->
+    <section id="view-registrations" class="view hidden">
+      <button class="btn btn-ghost" type="button" id="back-to-events">← Back to events</button>
 
-      <form id="registration-form" class="form-grid" autocomplete="off">
-        <label>Student name
-          <input type="text" id="student-name" placeholder="e.g. Juan Dela Cruz" />
-        </label>
-
-        <label>Student ID
-          <input type="text" id="student-id" placeholder="e.g. 2023-00123" />
-        </label>
-
-        <label>Year level
-          <select id="year-level">
-            <option value="">—</option>
-            <option>1st Year</option>
-            <option>2nd Year</option>
-            <option>3rd Year</option>
-            <option>4th Year</option>
-          </select>
-        </label>
-
-        <div class="form-actions">
-          <button type="submit">Register student</button>
+      <div class="panel">
+        <div class="panel-head">
+          <div>
+            <h2 class="panel-title" id="reg-event-name">Event</h2>
+            <p class="panel-sub" id="reg-event-meta"></p>
+          </div>
         </div>
-      </form>
 
-      <div class="toolbar">
-        <input type="search" id="reg-search" placeholder="Search by name or student ID" />
-        <label>Attendance:
-          <select id="reg-attendance-filter">
-            <option value="All">All</option>
-            <option value="Present">Present</option>
-            <option value="Absent">Not yet present</option>
-          </select>
-        </label>
+        <!-- live counts -->
+        <div class="stats" id="reg-stats"></div>
+
+        <!-- Registration form -->
+        <form id="reg-form" class="form-grid" autocomplete="off">
+          <label>Student name <input type="text" id="r-name" placeholder="Full name" /></label>
+          <label>Student ID <input type="text" id="r-id" placeholder="e.g. 2021-00123" /></label>
+          <label>Year level
+            <select id="r-year">
+              <option value="1st Year">1st Year</option>
+              <option value="2nd Year">2nd Year</option>
+              <option value="3rd Year">3rd Year</option>
+              <option value="4th Year">4th Year</option>
+            </select>
+          </label>
+          <div class="form-actions">
+            <button class="btn btn-primary" type="submit">Register student</button>
+          </div>
+        </form>
+        <p class="form-msg" id="reg-msg" role="status"></p>
       </div>
 
-      <table id="registrations-table">
-        <thead>
-          <tr>
-            <th>Student name</th><th>Student ID</th><th>Year</th>
-            <th>Date registered</th><th>Attendance</th><th>Actions</th>
-          </tr>
-        </thead>
-        <tbody id="registrations-body">
-          <!-- rows rendered by JavaScript -->
-        </tbody>
-      </table>
+      <!-- Search / filter registrations -->
+      <div class="toolbar">
+        <div class="search">
+          <input type="search" id="reg-search" placeholder="Search by name or student ID…" />
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Student</th>
+              <th>Student ID</th>
+              <th>Year</th>
+              <th>Date registered</th>
+              <th class="col-actions">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="reg-body"></tbody>
+        </table>
+        <div class="empty-state hidden" id="reg-empty"><p>No registrations match.</p></div>
+      </div>
     </section>
 
-    <!-- ============ REPORT ============ -->
-    <section class="card">
-      <h2>Report</h2>
-      <div id="report"><!-- filled by JavaScript --></div>
+    <!-- ============ REPORT VIEW ============ -->
+    <section id="view-report" class="view hidden">
+      <div class="panel">
+        <div class="panel-head"><h2 class="panel-title">Events per status</h2></div>
+        <div class="stats" id="report-status"></div>
+      </div>
     </section>
+
   </main>
+</div>
 
-  <footer>
-    <p>IT 415 Midterm — Ronian Dave P. Tolentino</p>
-  </footer>
-
-  <script src="js/storage.js"></script>
-  <script src="js/app.js"></script>
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
 </body>
 </html>
