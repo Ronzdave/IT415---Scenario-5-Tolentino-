@@ -112,6 +112,13 @@
         <div class="search">
           <input type="search" id="reg-search" placeholder="Search by name or student ID…" />
         </div>
+        <label class="inline">Attendance:
+          <select id="reg-att-filter">
+            <option value="All">All</option>
+            <option value="Present">Present</option>
+            <option value="Absent">Not present</option>
+          </select>
+        </label>
       </div>
 
       <div class="table-wrap">
@@ -122,6 +129,7 @@
               <th>Student ID</th>
               <th>Year</th>
               <th>Date registered</th>
+              <th>Attendance</th>
               <th class="col-actions">Actions</th>
             </tr>
           </thead>
@@ -136,6 +144,11 @@
       <div class="panel">
         <div class="panel-head"><h2 class="panel-title">Events per status</h2></div>
         <div class="stats" id="report-status"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h2 class="panel-title">Best completed event</h2></div>
+        <p class="panel-sub">Completed event with the highest attendance rate.</p>
+        <div id="report-best"></div>
       </div>
     </section>
 
