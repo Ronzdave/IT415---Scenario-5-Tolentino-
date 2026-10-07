@@ -200,10 +200,32 @@ function cancelRegistration(id) {
   render();
 }
 
+// ---------- Report ----------
+function renderReport() {
+  const box = document.getElementById("report");
+  if (events.length === 0) {
+    box.innerHTML = `<p class="muted">No events yet, so there is nothing to report.</p>`;
+    return;
+  }
+
+  // Feature 9: count events per status.
+  const counts = STATUS_ORDER.map(status => ({
+    status,
+    n: events.filter(ev => ev.status === status).length,
+  }));
+
+  let html = "<p><strong>Events per status:</strong></p><ul>";
+  counts.forEach(c => { html += `<li>${c.status}: ${c.n}</li>`; });
+  html += "</ul>";
+
+  box.innerHTML = html;
+}
+
 // ---------- Rendering ----------
 function render() {
   renderEvents();
   renderRegistrations();
+  renderReport();
 }
 
 function renderEvents() {
@@ -252,9 +274,22 @@ function renderRegistrations() {
   }
   label.textContent = `— ${ev.name}`;
 
-  const list = registrations.filter(r => r.eventId === ev.id);
+  // Feature 8: search by name/ID and filter by attendance.
+  const term = document.getElementById("reg-search").value.trim().toLowerCase();
+  const attFilter = document.getElementById("reg-attendance-filter").value;
+
+  let list = registrations.filter(r => r.eventId === ev.id);
+  if (term) {
+    list = list.filter(r =>
+      r.studentName.toLowerCase().includes(term) ||
+      r.studentId.toLowerCase().includes(term)
+    );
+  }
+  if (attFilter === "Present") list = list.filter(r => r.present);
+  if (attFilter === "Absent") list = list.filter(r => !r.present);
+
   if (list.length === 0) {
-    body.innerHTML = `<tr class="empty-row"><td colspan="6">No registrations yet for this event.</td></tr>`;
+    body.innerHTML = `<tr class="empty-row"><td colspan="6">No registrations match.</td></tr>`;
     return;
   }
 
@@ -279,6 +314,8 @@ function init() {
   document.getElementById("event-reset").addEventListener("click", resetEventForm);
   document.getElementById("status-filter").addEventListener("change", render);
   document.getElementById("registration-form").addEventListener("submit", registerStudent);
+  document.getElementById("reg-search").addEventListener("input", render);
+  document.getElementById("reg-attendance-filter").addEventListener("change", render);
 
   document.getElementById("registrations-body").addEventListener("click", (e) => {
     const btn = e.target.closest("button");
